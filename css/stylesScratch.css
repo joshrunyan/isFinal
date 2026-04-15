@@ -31,6 +31,10 @@ div {
     
 }
 
+.ul1{
+    list-style-type: none;
+}
+
 .mainBody {
     background-color: lightgray;
     color: black;
