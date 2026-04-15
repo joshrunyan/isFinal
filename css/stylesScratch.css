@@ -2,7 +2,7 @@ body{
     background-color: pink;
     font-family: 'Courier New', Courier, monospace;
     text-align: center;
-    text-color: black;
+    color: black;
 }
 
 :root{
@@ -21,7 +21,7 @@ div {
 
 .footer {
     background-color: lightgrey;
-    color: black;
+    color: red;
     position: fixed;
     left: 0px;
     right: 0px;
