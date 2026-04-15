@@ -1,5 +1,5 @@
 body{
-    background-color: pink;
+    background-color: white;
     font-family: 'Courier New', Courier, monospace;
     text-align: center;
     color: black;
@@ -20,7 +20,7 @@ div {
 }
 
 .footer {
-    background-color: lightgrey;
+    background-color: grey;
     color: red;
     position: fixed;
     left: 0px;
