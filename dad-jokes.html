@@ -9,6 +9,19 @@
     .joke-box{margin:2rem 0;padding:1.25rem;border-radius:8px;background:#f8f9fa}
     .controls{display:flex;gap:0.5rem;flex-wrap:wrap}
     button{cursor:pointer}
+    
+    /* Styles for the History section */
+    .history-container {margin-top: 2rem; border-top: 2px solid #eee; padding-top: 1rem;}
+    #jokeHistory {list-style-type: none; padding: 0;}
+    #jokeHistory li {
+        background: #fff;
+        margin-bottom: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
     /* explosion overlay */
     :root{--explosion-duration: 700ms}
     #explosion{
@@ -43,7 +56,13 @@
 
     <div id="joke" class="joke-box">Press "Get Dad Joke" to begin.</div>
     <img id="explosion" src="assets/img/boom-explosion.gif" alt="" aria-hidden="true">
+
+    <div class="history-container">
+        <h3>Joke History</h3>
+        <ul id="jokeHistory"></ul>
+    </div>
   </main>
+
   <script>
     const jokes = [
       "I'm reading a book on anti-gravity. It's impossible to put down.",
@@ -68,6 +87,7 @@
     const copyBtn = document.getElementById('copyJoke');
     const useApi = document.getElementById('useApi');
     const explosionEl = document.getElementById('explosion');
+    const historyList = document.getElementById('jokeHistory'); // NEW
 
     function getExplosionDurationMs(){
       const raw = getComputedStyle(document.documentElement).getPropertyValue('--explosion-duration') || '700ms';
@@ -82,6 +102,14 @@
       explosionEl.src = 'assets/img/boom-explosion.gif?'+Date.now();
       explosionEl.classList.add('visible');
       setTimeout(()=> explosionEl.classList.remove('visible'), EXPLOSION_DURATION_MS);
+    }
+
+    // NEW: Function to add joke to the list
+    function addToHistory(jokeText) {
+        const li = document.createElement('li');
+        li.textContent = jokeText;
+        // This adds the newest joke to the top of the list
+        historyList.prepend(li);
     }
 
     async function fetchApiJoke(){
@@ -100,13 +128,21 @@
     }
 
     async function newJoke(){
-      jokeEl.textContent = 'Loading...';
+      let currentJokeText = "";
+      
       if(useApi && useApi.checked){
         const j = await fetchApiJoke();
-        if(j){ jokeEl.textContent = j; playExplosion(); return; }
+        if(j){ 
+            currentJokeText = j;
+        }
       }
-      jokeEl.textContent = localJoke();
-      // show explosion once per new joke
+
+      if(!currentJokeText) {
+          currentJokeText = localJoke();
+      }
+
+      jokeEl.textContent = currentJokeText;
+      addToHistory(currentJokeText); // NEW: Add to our history list
       playExplosion();
     }
 
@@ -122,7 +158,6 @@
       }
     });
 
-    // allow pressing Enter to get a joke
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') newJoke(); });
   </script>
 
