@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dad Joke Generator</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .joke-box{margin:2rem 0;padding:1.25rem;border-radius:8px;background:#f8f9fa}
+    .controls{display:flex;gap:0.5rem;flex-wrap:wrap}
+    button{cursor:pointer}
+    /* explosion overlay */
+    :root{--explosion-duration: 700ms}
+    #explosion{
+      position: fixed;
+      left: 50%;
+      top: 40%;
+      transform: translate(-50%,-50%) scale(1);
+      width: 360px;
+      max-width: 80vw;
+      height: auto;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 120ms ease-in;
+      z-index: 9999;
+      mix-blend-mode: normal;
+    }
+    #explosion.visible{
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dad Joke Generator</h1>
+  </header>
+  <main>
+    <div class="controls">
+      <button id="newJoke">Get Dad Joke</button>
+      <button id="copyJoke">Copy</button>
+      <label style="align-self:center"><input type="checkbox" id="useApi" checked> Use online API</label>
+    </div>
+
+    <div id="joke" class="joke-box">Press "Get Dad Joke" to begin.</div>
+    <img id="explosion" src="assets/img/boom-explosion.gif" alt="" aria-hidden="true">
+  </main>
+  <script>
+    const jokes = [
+      "I'm reading a book on anti-gravity. It's impossible to put down.",
+      "Did you hear about the restaurant on the moon? Great food, no atmosphere.",
+      "Why did the scarecrow win an award? Because he was outstanding in his field.",
+      "I would tell you a joke about construction, but I'm still working on it.",
+      "I used to play piano by ear, but now I use my hands.",
+      "I don't trust stairs — they're always up to something.",
+      "Why don't eggs tell jokes? They'd crack each other up.",
+      "I told my wife she was drawing her eyebrows too high. She looked surprised.",
+      "What do you call fake spaghetti? An impasta.",
+      "I asked the librarian if the library had books on paranoia. She whispered, 'They're right behind you.'",
+      "Why did the math book look sad? Because it had too many problems.",
+      "I used to hate facial hair, but then it grew on me.",
+      "Did you hear about the guy who invented Lifesavers? He made a mint.",
+      "I don't play soccer because I enjoy the sport. I'm just doing it for kicks.",
+      "Why did the bicycle fall over? It was two tired."
+    ];
+
+    const jokeEl = document.getElementById('joke');
+    const btn = document.getElementById('newJoke');
+    const copyBtn = document.getElementById('copyJoke');
+    const useApi = document.getElementById('useApi');
+    const explosionEl = document.getElementById('explosion');
+
+    function getExplosionDurationMs(){
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--explosion-duration') || '700ms';
+      const m = raw.trim().match(/(\d+(?:\.\d+)?)/);
+      return m ? Math.round(parseFloat(m[1])) : 700;
+    }
+    const EXPLOSION_DURATION_MS = getExplosionDurationMs();
+
+    function playExplosion(){
+      if(!explosionEl) return;
+      // force reload so the GIF restarts
+      explosionEl.src = 'assets/img/boom-explosion.gif?'+Date.now();
+      explosionEl.classList.add('visible');
+      setTimeout(()=> explosionEl.classList.remove('visible'), EXPLOSION_DURATION_MS);
+    }
+
+    async function fetchApiJoke(){
+      try{
+        const res = await fetch('https://icanhazdadjoke.com/', {headers:{'Accept':'application/json'}});
+        if(!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        return data.joke;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function localJoke(){
+      return jokes[Math.floor(Math.random()*jokes.length)];
+    }
+
+    async function newJoke(){
+      jokeEl.textContent = 'Loading...';
+      if(useApi && useApi.checked){
+        const j = await fetchApiJoke();
+        if(j){ jokeEl.textContent = j; playExplosion(); return; }
+      }
+      jokeEl.textContent = localJoke();
+      // show explosion once per new joke
+      playExplosion();
+    }
+
+    btn.addEventListener('click', newJoke);
+    copyBtn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(jokeEl.textContent || '');
+        const original = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=> copyBtn.textContent = original, 1400);
+      }catch(e){
+        alert('Copy failed.');
+      }
+    });
+
+    // allow pressing Enter to get a joke
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') newJoke(); });
+  </script>
+
+  <a href="index.html">Back to Scratch</a>
+</body>
+</html>
